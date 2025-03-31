@@ -9,6 +9,8 @@ import { ConfigModule } from './config/config.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
 import { EmailVerificationModule } from './email-verification/email-verification.module';
 import { RegistrationModule } from './registration/registration.module';
+import { RolesModule } from './roles/roles.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { RegistrationModule } from './registration/registration.module';
     PasswordResetModule,
     EmailVerificationModule,
     RegistrationModule,
+    RolesModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

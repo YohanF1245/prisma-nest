@@ -4,6 +4,7 @@ import { UsersService } from '../users/users.service';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
 import { MailConfigService } from '../config/mail-config.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class PasswordResetService {
@@ -11,6 +12,7 @@ export class PasswordResetService {
     private prisma: PrismaService,
     private usersService: UsersService,
     private mailConfigService: MailConfigService,
+    private mailService: MailService,
   ) {}
 
   async requestPasswordReset(email: string) {
@@ -38,9 +40,12 @@ export class PasswordResetService {
       },
     });
 
-    // TODO: Implémenter l'envoi d'email avec le lien de réinitialisation
-    // Dans une application réelle, vous utiliseriez un service d'envoi d'email comme Nodemailer ou SendGrid
-    console.log(`Lien de réinitialisation pour ${email}: ${token}`);
+    // Envoi de l'email de réinitialisation
+    await this.mailService.sendPasswordResetEmail(
+      email,
+      user.firstName || user.email,
+      token
+    );
 
     return { message: 'Si un compte avec cet email existe, un email de réinitialisation sera envoyé.' };
   }

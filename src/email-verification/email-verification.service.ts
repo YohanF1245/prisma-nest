@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { v4 as uuidv4 } from 'uuid';
 import { MailConfigService } from '../config/mail-config.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class EmailVerificationService {
@@ -10,6 +11,7 @@ export class EmailVerificationService {
     private prisma: PrismaService,
     private usersService: UsersService,
     private mailConfigService: MailConfigService,
+    private mailService: MailService,
   ) {}
 
   async sendVerificationEmail(userId: string) {
@@ -33,8 +35,12 @@ export class EmailVerificationService {
       },
     });
 
-    // TODO: Implémenter l'envoi d'email avec le lien de vérification
-    console.log(`Lien de vérification pour ${user.email}: ${token}`);
+    // Envoi de l'email de vérification
+    await this.mailService.sendVerificationEmail(
+      user.email,
+      user.firstName || user.email,
+      token
+    );
 
     return { message: 'Email de vérification envoyé' };
   }

@@ -3,11 +3,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
-import { Role } from '@prisma/client';
+import { RolesService } from '../roles/roles.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private rolesService: RolesService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<{ id: string }> {
     const { email, password, firstName, lastName } = createUserDto;
@@ -35,7 +38,7 @@ export class UsersService {
     });
 
     // Attribuer automatiquement le rôle utilisateur
-    await this.assignRoleToUser(user.id, 'USER');
+    await this.rolesService.assignRoleToUser(user.id, 'USER');
 
     return { id: user.id };
   }
@@ -180,57 +183,7 @@ export class UsersService {
     });
   }
 
-  async assignRoleToUser(userId: string, roleName: string) {
-    // Vérifier si le rôle existe
-    let role = await this.prisma.role.findUnique({
-      where: { name: roleName },
-    });
-
-    // Si le rôle n'existe pas, le créer
-    if (!role) {
-      role = await this.prisma.role.create({
-        data: {
-          name: roleName,
-          description: `Rôle ${roleName}`,
-        },
-      });
-    }
-
-    // Vérifier si l'utilisateur a déjà ce rôle
-    const existingUserRole = await this.prisma.userRole.findFirst({
-      where: {
-        userId,
-        roleId: role.id,
-      },
-    });
-
-    if (!existingUserRole) {
-      // Attribuer le rôle à l'utilisateur
-      await this.prisma.userRole.create({
-        data: {
-          userId,
-          roleId: role.id,
-        },
-      });
-    }
-  }
-
-  async getUserRoles(userId: string): Promise<Role[]> {
-    const userWithRoles = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        roles: {
-          include: {
-            role: true,
-          },
-        },
-      },
-    });
-
-    if (!userWithRoles) {
-      throw new NotFoundException(`Utilisateur avec l'ID ${userId} non trouvé`);
-    }
-
-    return userWithRoles.roles.map((userRole) => userRole.role);
+  async getUserRoles(userId: string) {
+    return this.rolesService.getUserRoles(userId);
   }
 } 
