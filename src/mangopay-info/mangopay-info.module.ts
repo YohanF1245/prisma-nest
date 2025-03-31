@@ -3,9 +3,10 @@ import { MangopayInfoService } from './mangopay-info.service';
 import { MangopayInfoController } from './mangopay-info.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ConfigModule } from '../config/config.module';
+import { AddressModule } from '../address/address.module';
 
 @Module({
-  imports: [PrismaModule, ConfigModule],
+  imports: [PrismaModule, ConfigModule, AddressModule],
   controllers: [MangopayInfoController],
   providers: [MangopayInfoService],
   exports: [MangopayInfoService],

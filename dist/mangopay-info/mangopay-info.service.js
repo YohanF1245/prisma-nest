@@ -14,13 +14,16 @@ exports.MangopayInfoService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const mangopay_config_service_1 = require("../config/mangopay-config.service");
+const address_service_1 = require("../address/address.service");
 let MangopayInfoService = MangopayInfoService_1 = class MangopayInfoService {
     prisma;
     mangopayConfigService;
+    addressService;
     logger = new common_1.Logger(MangopayInfoService_1.name);
-    constructor(prisma, mangopayConfigService) {
+    constructor(prisma, mangopayConfigService, addressService) {
         this.prisma = prisma;
         this.mangopayConfigService = mangopayConfigService;
+        this.addressService = addressService;
     }
     async create(createMangopayInfoDto) {
         const { userId } = createMangopayInfoDto;
@@ -57,6 +60,25 @@ let MangopayInfoService = MangopayInfoService_1 = class MangopayInfoService {
                     kyc: false,
                 },
             });
+            if (createMangopayInfoDto.address) {
+                try {
+                    await this.addressService.create({
+                        userId,
+                        addressLine1: createMangopayInfoDto.address.addressLine1,
+                        addressLine2: createMangopayInfoDto.address.addressLine2,
+                        city: createMangopayInfoDto.address.city,
+                        region: createMangopayInfoDto.address.region,
+                        postalCode: createMangopayInfoDto.address.postalCode,
+                        country: createMangopayInfoDto.address.country,
+                        isPrimary: true,
+                        addressType: 'BOTH',
+                    });
+                    this.logger.log(`Adresse créée pour l'utilisateur Mangopay avec l'ID ${userId}`);
+                }
+                catch (error) {
+                    this.logger.error(`Erreur lors de la création de l'adresse: ${error.message}`, error.stack);
+                }
+            }
             return {
                 id: mangopayInfo.id,
                 mangopayUserId: mangopayInfo.mangopayUserId,
@@ -136,14 +158,13 @@ let MangopayInfoService = MangopayInfoService_1 = class MangopayInfoService {
             PersonType: 'NATURAL',
         };
         if (dto.address) {
-            naturalUser['Address'] = {
-                AddressLine1: dto.address.addressLine1,
-                AddressLine2: dto.address.addressLine2 || null,
-                City: dto.address.city,
-                Region: dto.address.region || null,
-                PostalCode: dto.address.postalCode,
-                Country: dto.address.country,
-            };
+            try {
+                const formattedAddress = this.addressService.toMangopayFormat(dto.address);
+                naturalUser['Address'] = formattedAddress;
+            }
+            catch (error) {
+                this.logger.error(`Erreur lors du formatage de l'adresse pour Mangopay: ${error.message}`, error.stack);
+            }
         }
         return new Promise((resolve, reject) => {
             mangopayApi.Users.create(naturalUser, (err, user) => {
@@ -174,14 +195,13 @@ let MangopayInfoService = MangopayInfoService_1 = class MangopayInfoService {
             PersonType: 'LEGAL',
         };
         if (dto.address) {
-            legalUser['HeadquartersAddress'] = {
-                AddressLine1: dto.address.addressLine1,
-                AddressLine2: dto.address.addressLine2 || null,
-                City: dto.address.city,
-                Region: dto.address.region || null,
-                PostalCode: dto.address.postalCode,
-                Country: dto.address.country,
-            };
+            try {
+                const formattedAddress = this.addressService.toMangopayFormat(dto.address);
+                legalUser['HeadquartersAddress'] = formattedAddress;
+            }
+            catch (error) {
+                this.logger.error(`Erreur lors du formatage de l'adresse pour Mangopay: ${error.message}`, error.stack);
+            }
         }
         return new Promise((resolve, reject) => {
             mangopayApi.Users.create(legalUser, (err, user) => {
@@ -202,6 +222,7 @@ exports.MangopayInfoService = MangopayInfoService;
 exports.MangopayInfoService = MangopayInfoService = MangopayInfoService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        mangopay_config_service_1.MangopayConfigService])
+        mangopay_config_service_1.MangopayConfigService,
+        address_service_1.AddressService])
 ], MangopayInfoService);
 //# sourceMappingURL=mangopay-info.service.js.map

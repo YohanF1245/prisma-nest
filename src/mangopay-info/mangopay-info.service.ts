@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ConflictException, Logger } from '@nestj
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMangopayInfoDto } from './dto/create-mangopay-info.dto';
 import { MangopayConfigService } from '../config/mangopay-config.service';
+import { AddressService } from '../address/address.service';
 
 @Injectable()
 export class MangopayInfoService {
@@ -10,6 +11,7 @@ export class MangopayInfoService {
   constructor(
     private prisma: PrismaService,
     private mangopayConfigService: MangopayConfigService,
+    private addressService: AddressService,
   ) {}
 
   async create(createMangopayInfoDto: CreateMangopayInfoDto) {
@@ -57,6 +59,27 @@ export class MangopayInfoService {
           kyc: false,
         },
       });
+
+      // Si une adresse est fournie, créer l'adresse dans notre système
+      if (createMangopayInfoDto.address) {
+        try {
+          await this.addressService.create({
+            userId,
+            addressLine1: createMangopayInfoDto.address.addressLine1,
+            addressLine2: createMangopayInfoDto.address.addressLine2,
+            city: createMangopayInfoDto.address.city,
+            region: createMangopayInfoDto.address.region,
+            postalCode: createMangopayInfoDto.address.postalCode,
+            country: createMangopayInfoDto.address.country,
+            isPrimary: true,
+            addressType: 'BOTH',
+          });
+          this.logger.log(`Adresse créée pour l'utilisateur Mangopay avec l'ID ${userId}`);
+        } catch (error) {
+          this.logger.error(`Erreur lors de la création de l'adresse: ${error.message}`, error.stack);
+          // Ne pas échouer la création de l'utilisateur Mangopay si la création de l'adresse échoue
+        }
+      }
 
       return {
         id: mangopayInfo.id,
@@ -156,15 +179,14 @@ export class MangopayInfoService {
       PersonType: 'NATURAL',
     };
 
+    // Si une adresse est fournie, l'ajouter à l'utilisateur Mangopay
     if (dto.address) {
-      naturalUser['Address'] = {
-        AddressLine1: dto.address.addressLine1,
-        AddressLine2: dto.address.addressLine2 || null,
-        City: dto.address.city,
-        Region: dto.address.region || null,
-        PostalCode: dto.address.postalCode,
-        Country: dto.address.country,
-      };
+      try {
+        const formattedAddress = this.addressService.toMangopayFormat(dto.address);
+        naturalUser['Address'] = formattedAddress;
+      } catch (error) {
+        this.logger.error(`Erreur lors du formatage de l'adresse pour Mangopay: ${error.message}`, error.stack);
+      }
     }
 
     // Créer l'utilisateur naturel dans Mangopay
@@ -198,15 +220,14 @@ export class MangopayInfoService {
       PersonType: 'LEGAL',
     };
 
+    // Si une adresse est fournie, l'ajouter à l'utilisateur Mangopay en tant qu'adresse du siège
     if (dto.address) {
-      legalUser['HeadquartersAddress'] = {
-        AddressLine1: dto.address.addressLine1,
-        AddressLine2: dto.address.addressLine2 || null,
-        City: dto.address.city,
-        Region: dto.address.region || null,
-        PostalCode: dto.address.postalCode,
-        Country: dto.address.country,
-      };
+      try {
+        const formattedAddress = this.addressService.toMangopayFormat(dto.address);
+        legalUser['HeadquartersAddress'] = formattedAddress;
+      } catch (error) {
+        this.logger.error(`Erreur lors du formatage de l'adresse pour Mangopay: ${error.message}`, error.stack);
+      }
     }
 
     // Créer l'utilisateur légal dans Mangopay

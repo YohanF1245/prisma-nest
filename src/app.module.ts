@@ -13,6 +13,7 @@ import { RolesModule } from './roles/roles.module';
 import { MailModule } from './mail/mail.module';
 import { MangopayInfoModule } from './mangopay-info/mangopay-info.module';
 import { MangopayWalletModule } from './mangopay-wallet/mangopay-wallet.module';
+import { AddressModule } from './address/address.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { MangopayWalletModule } from './mangopay-wallet/mangopay-wallet.module';
     MailModule,
     MangopayInfoModule,
     MangopayWalletModule,
+    AddressModule,
   ],
   controllers: [AppController],
   providers: [AppService],

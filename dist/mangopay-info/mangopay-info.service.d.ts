@@ -1,11 +1,13 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMangopayInfoDto } from './dto/create-mangopay-info.dto';
 import { MangopayConfigService } from '../config/mangopay-config.service';
+import { AddressService } from '../address/address.service';
 export declare class MangopayInfoService {
     private prisma;
     private mangopayConfigService;
+    private addressService;
     private readonly logger;
-    constructor(prisma: PrismaService, mangopayConfigService: MangopayConfigService);
+    constructor(prisma: PrismaService, mangopayConfigService: MangopayConfigService, addressService: AddressService);
     create(createMangopayInfoDto: CreateMangopayInfoDto): Promise<{
         id: string;
         mangopayUserId: string;

@@ -12,12 +12,13 @@ const mangopay_info_service_1 = require("./mangopay-info.service");
 const mangopay_info_controller_1 = require("./mangopay-info.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
 const config_module_1 = require("../config/config.module");
+const address_module_1 = require("../address/address.module");
 let MangopayInfoModule = class MangopayInfoModule {
 };
 exports.MangopayInfoModule = MangopayInfoModule;
 exports.MangopayInfoModule = MangopayInfoModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, config_module_1.ConfigModule],
+        imports: [prisma_module_1.PrismaModule, config_module_1.ConfigModule, address_module_1.AddressModule],
         controllers: [mangopay_info_controller_1.MangopayInfoController],
         providers: [mangopay_info_service_1.MangopayInfoService],
         exports: [mangopay_info_service_1.MangopayInfoService],

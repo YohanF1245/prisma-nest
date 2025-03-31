@@ -26,6 +26,7 @@ model User {
   verifyMailLinks VerifyMailLink[]
   roles           UserRole[]
   mangopayInfo    MangopayInfo?
+  addresses       Address[]
 }
 
 model Role {
@@ -69,6 +70,22 @@ model VerifyMailLink {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Address {
+  id            String   @id @default(uuid())
+  addressLine1  String
+  addressLine2  String?
+  city          String
+  region        String?
+  postalCode    String
+  country       String
+  isPrimary     Boolean  @default(false)
+  addressType   String   @default("SHIPPING") // SHIPPING, BILLING, BOTH, etc.
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model MangopayInfo {
