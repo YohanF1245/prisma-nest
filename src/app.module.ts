@@ -11,6 +11,8 @@ import { EmailVerificationModule } from './email-verification/email-verification
 import { RegistrationModule } from './registration/registration.module';
 import { RolesModule } from './roles/roles.module';
 import { MailModule } from './mail/mail.module';
+import { MangopayInfoModule } from './mangopay-info/mangopay-info.module';
+import { MangopayWalletModule } from './mangopay-wallet/mangopay-wallet.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { MailModule } from './mail/mail.module';
     RegistrationModule,
     RolesModule,
     MailModule,
+    MangopayInfoModule,
+    MangopayWalletModule,
   ],
   controllers: [AppController],
   providers: [AppService],

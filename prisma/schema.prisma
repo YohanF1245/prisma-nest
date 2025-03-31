@@ -25,6 +25,7 @@ model User {
   resetPassLinks  ResetPassLink[]
   verifyMailLinks VerifyMailLink[]
   roles           UserRole[]
+  mangopayInfo    MangopayInfo?
 }
 
 model Role {
@@ -68,4 +69,30 @@ model VerifyMailLink {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MangopayInfo {
+  id                String           @id @default(uuid())
+  mangopayUserId    String           @unique
+  userId            String           @unique
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              String           // NATURAL, LEGAL, etc.
+  status            String           // CREATED, VALIDATED, etc.
+  kyc               Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  mangopayWallets   MangopayWallet[]
+}
+
+model MangopayWallet {
+  id               String       @id @default(uuid())
+  mangopayWalletId String       @unique
+  mangopayInfoId   String
+  mangopayInfo     MangopayInfo @relation(fields: [mangopayInfoId], references: [id], onDelete: Cascade)
+  currency         String       // EUR, USD, etc.
+  balance          Float        @default(0)
+  status           String       // CREATED, ACTIVE, etc.
+  description      String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 }
