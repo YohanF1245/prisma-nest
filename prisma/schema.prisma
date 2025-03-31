@@ -99,6 +99,7 @@ model MangopayInfo {
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   mangopayWallets   MangopayWallet[]
+  kycDocuments      KycDocument[]
 }
 
 model MangopayWallet {
@@ -112,4 +113,32 @@ model MangopayWallet {
   description      String?
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
+}
+
+model KycDocument {
+  id                String       @id @default(uuid())
+  mangopayDocumentId String      @unique
+  mangopayInfoId    String
+  mangopayInfo      MangopayInfo @relation(fields: [mangopayInfoId], references: [id], onDelete: Cascade)
+  type              String       // IDENTITY_PROOF, ADDRESS_PROOF, REGISTRATION_PROOF, etc.
+  status            String       // CREATED, VALIDATION_ASKED, VALIDATED, REFUSED, etc.
+  refusalReason     String?      // Raison du refus si le document est refusé
+  refusalReasonMessage String?   // Message détaillé du refus
+  fileName          String?      // Nom du fichier original
+  fileUrl           String?      // URL temporaire du fichier (peut être stocké localement ou sur S3)
+  pages             Int          @default(0)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  kycDocumentPages  KycDocumentPage[]
+}
+
+model KycDocumentPage {
+  id             String       @id @default(uuid())
+  kycDocumentId  String
+  kycDocument    KycDocument  @relation(fields: [kycDocumentId], references: [id], onDelete: Cascade)
+  mangopayPageId String?      // ID de la page dans Mangopay
+  fileUrl        String?      // URL temporaire du fichier pour cette page
+  pageNumber     Int          // Numéro de la page
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }

@@ -14,6 +14,7 @@ import { MailModule } from './mail/mail.module';
 import { MangopayInfoModule } from './mangopay-info/mangopay-info.module';
 import { MangopayWalletModule } from './mangopay-wallet/mangopay-wallet.module';
 import { AddressModule } from './address/address.module';
+import { MangopayKycModule } from './mangopay-kyc/mangopay-kyc.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AddressModule } from './address/address.module';
     MangopayInfoModule,
     MangopayWalletModule,
     AddressModule,
+    MangopayKycModule,
   ],
   controllers: [AppController],
   providers: [AppService],

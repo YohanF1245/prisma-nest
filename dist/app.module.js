@@ -23,6 +23,7 @@ const mail_module_1 = require("./mail/mail.module");
 const mangopay_info_module_1 = require("./mangopay-info/mangopay-info.module");
 const mangopay_wallet_module_1 = require("./mangopay-wallet/mangopay-wallet.module");
 const address_module_1 = require("./address/address.module");
+const mangopay_kyc_module_1 = require("./mangopay-kyc/mangopay-kyc.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -47,6 +48,7 @@ exports.AppModule = AppModule = __decorate([
             mangopay_info_module_1.MangopayInfoModule,
             mangopay_wallet_module_1.MangopayWalletModule,
             address_module_1.AddressModule,
+            mangopay_kyc_module_1.MangopayKycModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
