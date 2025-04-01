@@ -15,6 +15,9 @@ import { MangopayInfoModule } from './mangopay-info/mangopay-info.module';
 import { MangopayWalletModule } from './mangopay-wallet/mangopay-wallet.module';
 import { AddressModule } from './address/address.module';
 import { MangopayKycModule } from './mangopay-kyc/mangopay-kyc.module';
+import { ContractsModule } from './contracts/contracts.module';
+import { RightOwnersModule } from './right-owners/right-owners.module';
+import { TracksModule } from './tracks/tracks.module';
 
 @Module({
   imports: [
@@ -37,6 +40,9 @@ import { MangopayKycModule } from './mangopay-kyc/mangopay-kyc.module';
     MangopayWalletModule,
     AddressModule,
     MangopayKycModule,
+    ContractsModule,
+    RightOwnersModule,
+    TracksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

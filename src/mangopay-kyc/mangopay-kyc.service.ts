@@ -11,7 +11,7 @@ import * as path from 'path';
 import * as os from 'os';
 
 @Injectable()
-export class MangopayKycService {
+et class MangopayKycService {
   private readonly logger = new Logger(MangopayKycService.name);
   private readonly tempDir = path.join(os.tmpdir(), 'mangopay-uploads');
 
