@@ -3,12 +3,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateShareDto } from './dto/create-share.dto';
 import { UpdateShareDto } from './dto/update-share.dto';
 import { MangopayWalletService } from '../mangopay-wallet/mangopay-wallet.service';
+import { PriceMedianHistoryService } from '../price-median-history/price-median-history.service';
 
 @Injectable()
 export class SharesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mangopayWalletService: MangopayWalletService,
+    private readonly priceMedianHistoryService: PriceMedianHistoryService,
   ) {}
 
   async create(createShareDto: CreateShareDto) {
@@ -54,16 +56,24 @@ export class SharesService {
 
     // Si l'utilisateur a déjà des parts, mettre à jour la quantité
     if (existingShare) {
-      return this.prisma.share.update({
+      const updatedShare = await this.prisma.share.update({
         where: { id: existingShare.id },
         data: { quantity: existingShare.quantity + quantity },
       });
+
+      // Pas besoin d'initialiser l'historique des prix car il existe déjà
+      return updatedShare;
     }
 
     // Sinon, créer une nouvelle entrée
-    return this.prisma.share.create({
+    const newShare = await this.prisma.share.create({
       data: createShareDto,
     });
+
+    // Initialiser l'historique des prix médians pour cette nouvelle part
+    await this.priceMedianHistoryService.initializeForShare(newShare.id, costPerShare);
+
+    return newShare;
   }
 
   async findAll() {

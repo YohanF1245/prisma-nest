@@ -23,6 +23,7 @@ import { AlbumsModule } from './albums/albums.module';
 import { ArtistsModule } from './artists/artists.module';
 import { SharesModule } from './shares/shares.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { PriceMedianHistoryModule } from './price-median-history/price-median-history.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     ArtistsModule,
     SharesModule,
     TransactionsModule,
+    PriceMedianHistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

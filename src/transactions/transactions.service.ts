@@ -3,12 +3,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { MangopayWalletService } from '../mangopay-wallet/mangopay-wallet.service';
+import { PriceMedianHistoryService } from '../price-median-history/price-median-history.service';
 
 @Injectable()
 export class TransactionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mangopayWalletService: MangopayWalletService,
+    private readonly priceMedianHistoryService: PriceMedianHistoryService,
   ) {}
 
   async create(createTransactionDto: CreateTransactionDto) {
@@ -90,6 +92,9 @@ export class TransactionsService {
       where: { id: shareId },
       data: { userId: buyerId },
     });
+
+    // Enregistrer la transaction dans l'historique des prix médians
+    await this.priceMedianHistoryService.recordTransaction(shareId, price);
 
     return newTransaction;
   }
