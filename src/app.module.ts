@@ -24,6 +24,7 @@ import { ArtistsModule } from './artists/artists.module';
 import { SharesModule } from './shares/shares.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { PriceMedianHistoryModule } from './price-median-history/price-median-history.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { PriceMedianHistoryModule } from './price-median-history/price-median-hi
     SharesModule,
     TransactionsModule,
     PriceMedianHistoryModule,
+    StatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

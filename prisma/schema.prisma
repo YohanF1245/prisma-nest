@@ -163,6 +163,7 @@ model Contract {
   contractTracks        ContractTrack[]
   userContracts         UserContract[]
   shares                Share[]             @relation("ContractShares")
+  salesStats            SalesStat[]
 }
 
 model RightOwner {
@@ -300,4 +301,17 @@ model PriceMedianHistory {
   share       Share     @relation(fields: [shareId], references: [id], onDelete: Cascade)
 
   @@index([createdAt, shareId])
+}
+
+// Modèle pour les statistiques de ventes
+model SalesStat {
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now())
+  statType    String    // WEEKLY, MONTHLY
+  salesCount  Int
+  contractId  String
+  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId, statType])
+  @@index([createdAt])
 }
