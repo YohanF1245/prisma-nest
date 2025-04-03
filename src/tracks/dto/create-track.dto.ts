@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsUrl, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsUrl, IsOptional, IsUUID } from 'class-validator';
 
 export class CreateTrackDto {
   @IsNotEmpty()
@@ -12,4 +12,12 @@ export class CreateTrackDto {
   @IsOptional()
   @IsUrl()
   songImage?: string;
+
+  @IsOptional()
+  @IsUUID('4')
+  genreId?: string;
+
+  @IsOptional()
+  @IsUUID('4')
+  albumId?: string;
 } 

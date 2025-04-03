@@ -18,6 +18,11 @@ import { MangopayKycModule } from './mangopay-kyc/mangopay-kyc.module';
 import { ContractsModule } from './contracts/contracts.module';
 import { RightOwnersModule } from './right-owners/right-owners.module';
 import { TracksModule } from './tracks/tracks.module';
+import { GenresModule } from './genres/genres.module';
+import { AlbumsModule } from './albums/albums.module';
+import { ArtistsModule } from './artists/artists.module';
+import { SharesModule } from './shares/shares.module';
+import { TransactionsModule } from './transactions/transactions.module';
 
 @Module({
   imports: [
@@ -43,6 +48,11 @@ import { TracksModule } from './tracks/tracks.module';
     ContractsModule,
     RightOwnersModule,
     TracksModule,
+    GenresModule,
+    AlbumsModule,
+    ArtistsModule,
+    SharesModule,
+    TransactionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

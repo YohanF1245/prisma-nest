@@ -65,4 +65,34 @@ export class TracksController {
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.tracksService.remove(id);
   }
+
+  @Patch(':id/genre/:genreId')
+  @Roles('ADMIN')
+  setGenre(
+    @Param('id', ParseUUIDPipe) trackId: string,
+    @Param('genreId', ParseUUIDPipe) genreId: string,
+  ) {
+    return this.tracksService.setGenre(trackId, genreId);
+  }
+
+  @Delete(':id/genre')
+  @Roles('ADMIN')
+  removeGenre(@Param('id', ParseUUIDPipe) trackId: string) {
+    return this.tracksService.setGenre(trackId, null);
+  }
+
+  @Patch(':id/album/:albumId')
+  @Roles('ADMIN')
+  setAlbum(
+    @Param('id', ParseUUIDPipe) trackId: string,
+    @Param('albumId', ParseUUIDPipe) albumId: string,
+  ) {
+    return this.tracksService.setAlbum(trackId, albumId);
+  }
+
+  @Delete(':id/album')
+  @Roles('ADMIN')
+  removeAlbum(@Param('id', ParseUUIDPipe) trackId: string) {
+    return this.tracksService.setAlbum(trackId, null);
+  }
 } 

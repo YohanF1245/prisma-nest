@@ -11,10 +11,17 @@ export class TracksService {
     try {
       return await this.prisma.track.create({
         data: createTrackDto,
+        include: {
+          genre: true,
+          album: true,
+        },
       });
     } catch (error) {
       if (error.code === 'P2002') {
         throw new BadRequestException('Une piste avec cet identifiant externe existe déjà');
+      }
+      if (error.code === 'P2003') {
+        throw new BadRequestException('Le genre ou l\'album référencé n\'existe pas');
       }
       throw error;
     }
@@ -28,6 +35,8 @@ export class TracksService {
             contract: true,
           },
         },
+        genre: true,
+        album: true,
       },
     });
   }
@@ -41,6 +50,8 @@ export class TracksService {
             contract: true,
           },
         },
+        genre: true,
+        album: true,
       },
     });
 
@@ -60,6 +71,8 @@ export class TracksService {
             contract: true,
           },
         },
+        genre: true,
+        album: true,
       },
     });
 
@@ -78,10 +91,17 @@ export class TracksService {
       return await this.prisma.track.update({
         where: { id },
         data: updateTrackDto,
+        include: {
+          genre: true,
+          album: true,
+        },
       });
     } catch (error) {
       if (error.code === 'P2002') {
         throw new BadRequestException('Une piste avec cet identifiant externe existe déjà');
+      }
+      if (error.code === 'P2003') {
+        throw new BadRequestException('Le genre ou l\'album référencé n\'existe pas');
       }
       throw error;
     }
@@ -121,5 +141,57 @@ export class TracksService {
 
     // Extraire les contrats des relations
     return contractTracks.map(ct => ct.contract);
+  }
+
+  async setGenre(trackId: string, genreId: string | null) {
+    // Vérifier si la piste existe
+    await this.findOne(trackId);
+
+    // Si genreId n'est pas null, vérifier si le genre existe
+    if (genreId) {
+      const genre = await this.prisma.genre.findUnique({
+        where: { id: genreId },
+      });
+
+      if (!genre) {
+        throw new NotFoundException(`Genre avec l'ID ${genreId} non trouvé`);
+      }
+    }
+
+    // Mettre à jour le genre de la piste
+    return this.prisma.track.update({
+      where: { id: trackId },
+      data: { genreId },
+      include: {
+        genre: true,
+        album: true,
+      },
+    });
+  }
+
+  async setAlbum(trackId: string, albumId: string | null) {
+    // Vérifier si la piste existe
+    await this.findOne(trackId);
+
+    // Si albumId n'est pas null, vérifier si l'album existe
+    if (albumId) {
+      const album = await this.prisma.album.findUnique({
+        where: { id: albumId },
+      });
+
+      if (!album) {
+        throw new NotFoundException(`Album avec l'ID ${albumId} non trouvé`);
+      }
+    }
+
+    // Mettre à jour l'album de la piste
+    return this.prisma.track.update({
+      where: { id: trackId },
+      data: { albumId },
+      include: {
+        genre: true,
+        album: true,
+      },
+    });
   }
 } 

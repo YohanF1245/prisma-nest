@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMangopayWalletDto } from './dto/create-mangopay-wallet.dto';
 import { MangopayConfigService } from '../config/mangopay-config.service';
@@ -169,5 +169,114 @@ export class MangopayWalletService {
         }
       });
     });
+  }
+
+  /**
+   * Vérifie si un utilisateur a suffisamment de fonds pour un achat
+   * @param userId - ID de l'utilisateur
+   * @param amount - Montant requis
+   * @returns boolean - true si l'utilisateur a suffisamment de fonds
+   */
+  async hasSufficientFunds(userId: string, amount: number): Promise<boolean> {
+    // Vérifier si l'utilisateur existe
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        mangopayInfo: {
+          include: {
+            mangopayWallets: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Utilisateur avec l'ID ${userId} non trouvé`);
+    }
+
+    if (!user.mangopayInfo || !user.mangopayInfo.mangopayWallets || user.mangopayInfo.mangopayWallets.length === 0) {
+      return false;
+    }
+
+    // Vérifier le solde total de tous les portefeuilles
+    const totalBalance = user.mangopayInfo.mangopayWallets.reduce(
+      (sum, wallet) => sum + wallet.balance,
+      0,
+    );
+
+    return totalBalance >= amount;
+  }
+
+  /**
+   * Effectue un transfert de fonds entre deux utilisateurs
+   * @param fromUserId - ID de l'utilisateur source
+   * @param toUserId - ID de l'utilisateur destination
+   * @param amount - Montant à transférer
+   */
+  async transferFunds(fromUserId: string, toUserId: string, amount: number): Promise<void> {
+    // Vérifier si les utilisateurs existent
+    const fromUser = await this.prisma.user.findUnique({
+      where: { id: fromUserId },
+      include: {
+        mangopayInfo: {
+          include: {
+            mangopayWallets: true,
+          },
+        },
+      },
+    });
+
+    if (!fromUser) {
+      throw new NotFoundException(`Utilisateur source avec l'ID ${fromUserId} non trouvé`);
+    }
+
+    const toUser = await this.prisma.user.findUnique({
+      where: { id: toUserId },
+      include: {
+        mangopayInfo: {
+          include: {
+            mangopayWallets: true,
+          },
+        },
+      },
+    });
+
+    if (!toUser) {
+      throw new NotFoundException(`Utilisateur destination avec l'ID ${toUserId} non trouvé`);
+    }
+
+    // Vérifier si les utilisateurs ont des portefeuilles
+    if (!fromUser.mangopayInfo || !fromUser.mangopayInfo.mangopayWallets || fromUser.mangopayInfo.mangopayWallets.length === 0) {
+      throw new BadRequestException(`L'utilisateur source n'a pas de portefeuille configuré`);
+    }
+
+    if (!toUser.mangopayInfo || !toUser.mangopayInfo.mangopayWallets || toUser.mangopayInfo.mangopayWallets.length === 0) {
+      throw new BadRequestException(`L'utilisateur destination n'a pas de portefeuille configuré`);
+    }
+
+    // Vérifier si l'utilisateur source a suffisamment de fonds
+    const hasFunds = await this.hasSufficientFunds(fromUserId, amount);
+    if (!hasFunds) {
+      throw new BadRequestException(`L'utilisateur source n'a pas suffisamment de fonds`);
+    }
+
+    // Obtenir le portefeuille principal de chaque utilisateur
+    const fromWallet = fromUser.mangopayInfo.mangopayWallets[0];
+    const toWallet = toUser.mangopayInfo.mangopayWallets[0];
+
+    // Mettre à jour les soldes
+    await this.prisma.mangopayWallet.update({
+      where: { id: fromWallet.id },
+      data: { balance: fromWallet.balance - amount },
+    });
+
+    await this.prisma.mangopayWallet.update({
+      where: { id: toWallet.id },
+      data: { balance: toWallet.balance + amount },
+    });
+
+    // Ici, on pourrait également ajouter la logique pour enregistrer la transaction
+    // dans Mangopay si nécessaire
+    this.logger.log(`Transfert de ${amount} effectué de ${fromUserId} vers ${toUserId}`);
   }
 } 
