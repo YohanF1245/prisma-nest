@@ -4,6 +4,7 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { MangopayWalletService } from '../mangopay-wallet/mangopay-wallet.service';
 import { PriceMedianHistoryService } from '../price-median-history/price-median-history.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class TransactionsService {
@@ -11,6 +12,7 @@ export class TransactionsService {
     private readonly prisma: PrismaService,
     private readonly mangopayWalletService: MangopayWalletService,
     private readonly priceMedianHistoryService: PriceMedianHistoryService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(createTransactionDto: CreateTransactionDto) {
@@ -95,6 +97,18 @@ export class TransactionsService {
 
     // Enregistrer la transaction dans l'historique des prix médians
     await this.priceMedianHistoryService.recordTransaction(shareId, price);
+
+    // Envoyer des notifications aux deux parties
+    try {
+      // Notification à l'acheteur
+      await this.notificationsService.notifyNewSale(buyerId, newTransaction.id, true);
+      
+      // Notification au vendeur
+      await this.notificationsService.notifyNewSale(sellerId, newTransaction.id, true);
+    } catch (error) {
+      // Ne pas bloquer la transaction si l'envoi de notification échoue
+      console.error('Erreur lors de l\'envoi des notifications:', error);
+    }
 
     return newTransaction;
   }

@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSalesStatDto } from './dto/create-sales-stat.dto';
+import { UpdateSalesStatDto } from './dto/update-sales-stat.dto';
 import { StatType } from './enums/stat-type.enum';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
@@ -75,6 +76,36 @@ export class StatsService {
         createdAt: 'desc',
       },
     });
+  }
+
+  async findOne(id: string) {
+    const salesStat = await this.prisma.salesStat.findUnique({
+      where: { id },
+      include: {
+        contract: true,
+      },
+    });
+
+    if (!salesStat) {
+      throw new NotFoundException(`Statistique de vente avec l'ID ${id} non trouvée`);
+    }
+
+    return salesStat;
+  }
+
+  async update(id: string, updateSalesStatDto: UpdateSalesStatDto) {
+    // Vérifier si la statistique existe
+    await this.findOne(id);
+    
+    // Mettre à jour la statistique
+    return this.prisma.salesStat.update({
+      where: { id },
+      data: updateSalesStatDto,
+    });
+  }
+
+  async updateIncome(id: string, income: number) {
+    return this.update(id, { income });
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)

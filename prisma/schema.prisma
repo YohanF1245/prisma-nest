@@ -31,6 +31,7 @@ model User {
   shares          Share[]           @relation("UserShares")
   boughtTransactions Transaction[] @relation("BuyerRelation")
   soldTransactions Transaction[] @relation("SellerRelation")
+  notifications   Notification[]
 }
 
 model Role {
@@ -309,9 +310,59 @@ model SalesStat {
   createdAt   DateTime  @default(now())
   statType    String    // WEEKLY, MONTHLY
   salesCount  Int
+  income      Float     @default(0)  // Montant des revenus associés à cette période
   contractId  String
   contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  reports     ReportStat[]
 
   @@index([contractId, statType])
+  @@index([createdAt])
+}
+
+// Modèle pour les rapports
+model Report {
+  id          String      @id @default(uuid())
+  title       String
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  status      String      // DUE, RECEIVED, PAID
+  totalIncome Float       @default(0)
+  totalSales  Int         @default(0)
+  startDate   DateTime
+  endDate     DateTime
+  reportStats ReportStat[]
+  pdfUrl      String?     // URL du fichier PDF généré
+}
+
+// Table de jointure entre Report et SalesStat
+model ReportStat {
+  id          String    @id @default(uuid())
+  reportId    String
+  salesStatId String
+  createdAt   DateTime  @default(now())
+  report      Report    @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  salesStat   SalesStat @relation(fields: [salesStatId], references: [id], onDelete: Cascade)
+
+  @@unique([reportId, salesStatId])
+}
+
+// Modèle pour les notifications
+model Notification {
+  id           String    @id @default(uuid())
+  userId       String
+  type         String    // NEW_SALE, NEW_CONTRACT, PAYMENT_RECEIVED
+  title        String
+  message      String
+  isRead       Boolean   @default(false)
+  emailSent    Boolean   @default(false)
+  relatedId    String?   // ID de l'entité liée (transaction, contrat, rapport)
+  createdAt    DateTime  @default(now())
+  readAt       DateTime?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([isRead])
   @@index([createdAt])
 }

@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { UpdateContractDto } from './dto/update-contract.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ContractsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService
+  ) {}
 
   async create(createContractDto: CreateContractDto) {
     const { rightOwnerIds, trackIds, users, ...contractData } = createContractDto;
@@ -71,6 +75,22 @@ export class ContractsService {
           },
         },
       });
+
+      // Envoyer des notifications aux utilisateurs associés au contrat
+      if (contract.userContracts && contract.userContracts.length > 0) {
+        try {
+          for (const userContract of contract.userContracts) {
+            await this.notificationsService.notifyNewContract(
+              userContract.user.id,
+              contract.id,
+              true
+            );
+          }
+        } catch (error) {
+          // Ne pas bloquer la création du contrat si l'envoi de notification échoue
+          console.error('Erreur lors de l\'envoi des notifications pour le nouveau contrat:', error);
+        }
+      }
 
       return contract;
     } catch (error) {

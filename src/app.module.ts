@@ -25,6 +25,8 @@ import { SharesModule } from './shares/shares.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { PriceMedianHistoryModule } from './price-median-history/price-median-history.module';
 import { StatsModule } from './stats/stats.module';
+import { ReportsModule } from './reports/reports.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -57,6 +59,8 @@ import { StatsModule } from './stats/stats.module';
     TransactionsModule,
     PriceMedianHistoryModule,
     StatsModule,
+    ReportsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

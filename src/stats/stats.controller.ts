@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Param, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, ParseUUIDPipe, Patch } from '@nestjs/common';
 import { StatsService } from './stats.service';
 import { CreateSalesStatDto } from './dto/create-sales-stat.dto';
+import { UpdateSalesStatDto } from './dto/update-sales-stat.dto';
 import { StatType } from './enums/stat-type.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../roles/guards/roles.guard';
@@ -33,6 +34,30 @@ export class StatsController {
   @Roles('ADMIN', 'USER')
   findByType(@Param('type') type: StatType) {
     return this.statsService.findByType(type);
+  }
+
+  @Get(':id')
+  @Roles('ADMIN', 'USER')
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.statsService.findOne(id);
+  }
+
+  @Patch(':id')
+  @Roles('ADMIN')
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateSalesStatDto: UpdateSalesStatDto,
+  ) {
+    return this.statsService.update(id, updateSalesStatDto);
+  }
+
+  @Patch(':id/income')
+  @Roles('ADMIN')
+  updateIncome(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('income') income: number,
+  ) {
+    return this.statsService.updateIncome(id, income);
   }
 
   // Endpoint pour déclencher manuellement le calcul des statistiques (utile pour les tests)
